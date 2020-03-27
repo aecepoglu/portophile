@@ -1,0 +1,8 @@
+  retrieve data via postgres
+  have a model layer with a typed interface that is sync or async.
+  decide if I should have a dynamic frontend or not
+  re-do the rest of the steps according to the previous decision
+  have a hello world REST API
+  design data types
+  serve data types over REST API
+  show some of the DB data in the web interface

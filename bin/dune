@@ -1,0 +1,3 @@
+(executable
+	(name main)
+	(libraries lib mariadb mustache lwt cohttp cohttp-lwt-unix))
