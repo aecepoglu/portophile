@@ -5,7 +5,6 @@ open Printf
 
 module M = Mariadb.Blocking
 
-
 let tmpl = Mustache.of_string "Hello {{name}}!\n"
 let json = `O ["name", `String "Ahmet Emre"]
 
@@ -50,31 +49,51 @@ let read_file path :string =
     close_in_noerr f;
     resp
 
+let load_partial s = read_file ("view/" ^ s ^ ".tpl.html")
+                     |> Mustache.of_string
+							|> Option.some
+
 let view_generic path = read_file path
                         |> Mustache.of_string
-                        |> Mustache.render
+								|> Mustache.render ~partials:load_partial
 
-let view_homepage = view_generic "view/homepage.tpl.html" (`O [])
+let view_homepage = view_generic "view/homepage.tpl.html"
+                      (`O [])
 
-let view_404 m p = view_generic "view/404.tpl.html" (`O ["method", `String m
-                                                        ;"url", `String p])
+let view_404 m p = view_generic "view/404.tpl.html"
+                     (`O ["method", `String m
+                         ;"url", `String p])
 
-let view_profile u = view_generic "view/profile.tpl.html" (`O ["userid", `String u])
+let view_profile u = view_generic "view/profile.tpl.html"
+                       (`O ["userid", `String u])
 
-let view_profile_edit u = view_generic "view/profile.tpl.html" (`O ["userid", `String u])
+let view_profile_edit u = view_generic "view/profile-edit.tpl.html"
+                            (`O ["userid", `String u
+                                ;"title", `String u
+                                ;"assets", `A []
+										  ])
+
+let view_exn e s = `Bad_request,
+                   (view_generic "view/400.tpl.html"
+                      (`O ["error", `String e
+                          ;"stack", `String s]))
 
 let server =
-  let router _headers _body :((Code.meth * string list) -> Code.status_code*string) = function
-  | `GET, []             -> `OK, view_homepage
-  | `GET, [user]         -> `OK, view_profile user
-  | `GET, [user; "edit"] -> `OK, view_profile_edit user
-  | m, p                 -> `Not_found, view_404 (Code.string_of_method m) (String.concat "/" p)
+  let router _headers _body (x:Code.meth * string list) :Code.status_code*string =
+    try match x with
+    | `GET, [""; ""]           -> `OK, view_homepage
+    | `GET, [""; user]         -> `OK, view_profile user
+    | `GET, [""; user; "edit"] -> `OK, view_profile_edit user
+    | m, p                     -> `Not_found, view_404 (Code.string_of_method m) (String.concat "/" p)
+    with
+    | e -> view_exn (Printexc.to_string e) (Printexc.get_backtrace ())
   in
   let callback _conn req body =
     let uri = req |> Request.uri in
     let paths = uri |> Uri.path |> String.split_on_char '/' in
     let meth = req |> Request.meth in
     let headers = req |> Request.headers |> Header.to_string in
+    let () = printf "%s %s\n" (Code.string_of_method meth) (Uri.path uri) in
       router headers body (meth, paths)
       |> fun (status, body) -> Server.respond_string ~status ~body ()
   in

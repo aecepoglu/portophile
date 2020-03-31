@@ -1,0 +1,57 @@
+{{> header}}
+
+<h1>Profile Edit for {{userid}}</h1>
+
+<style>
+#assets {
+    border: 1px solid;
+    padding: 0.5em;
+}
+
+.tags {
+}
+
+span.tag {
+    margin-left: 1em;
+    border-radius: 0.5em;
+    padding: 0 0.5em;
+    background-color: lightgrey;
+}
+</style>
+
+<div id="assets">
+	<div class="asset">
+		<div class="tags">
+			<span class="tag">
+				fullstack
+			</span>
+			<span class="tag">
+				SRE
+			</span>
+			<span class="tag add-tag" onclick="TODO">
+				(+)
+			</span>
+		</div>
+		<div class="content">
+			<textarea>
+				content
+			</textarea>
+		</div>
+	</div>
+	<button onclick="addAsset()">Add New</button>
+</div>
+
+<script type="text/javascript">
+	const INITIALS=[
+		{{#assets}}
+			{{value}},
+		{{/assets}}
+	]
+</script>
+
+<script type="text/javascript">
+//add script here
+console.log("Hello, World!")
+</script>
+
+{{> footer}}

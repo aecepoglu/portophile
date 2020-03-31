@@ -1,0 +1,35 @@
+type tag = string
+
+type content = TextContent of string
+             | ImgContent of string
+             | HtmlConent of string
+
+type asset = Asset of (tag list) * content
+           | Assets of asset list
+
+type portfolio = asset list
+
+type user = id * portfolio
+
+----------------
+CREATE TABLE assets (
+	id INT UNSIGNED AUTO_INCREMENT,
+	pid INT UNSIGNED,
+	content_type ENUM('text', 'img', 'html'),
+	contexnt TEXT,
+	PRIMARY KEY(id),
+	FOREIGN KEY (pid) REFERENCES assets(id)
+);
+
+CREATE TABLE users (
+	id VARCHAR(64),
+	email VARCHAR(256),
+	pass VARCHAR(256),
+);
+----------------
+
+- value: John Doe
+- value: http://image.png
+- value: Software Engineer
+  tag: fullstack
+  children: 
